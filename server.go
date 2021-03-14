@@ -67,6 +67,15 @@ func (h *coasterHandlers) post(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError) // cannot read body
 		w.Write([]byte(err.Error()))
+		return
+	}
+
+	// check for content type
+	ct := r.Header.Get("content-type")
+	if ct != "application/json" {
+		w.WriteHeader(http.StatusUnsupportedMediaType) // if send other than json to server
+		w.Write([]byte(fmt.Sprintf("need content type 'application/json' but got '%s'", ct)))
+		return
 	}
 
 	// unmarshal body data
@@ -75,6 +84,7 @@ func (h *coasterHandlers) post(w http.ResponseWriter, r *http.Request) {
 	if err2 != nil {
 		w.WriteHeader(http.StatusBadRequest) // cannot umarshall the data sent to server
 		w.Write([]byte(err2.Error()))
+		return
 	}
 
 	coaster.ID = fmt.Sprintf("%d", time.Now().UnixNano())
